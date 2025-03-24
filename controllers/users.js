@@ -58,3 +58,75 @@ const Register = async (req,res) => {
 }
 //register
 
+
+//login
+const Login = async (req,res) => {
+    try {
+        const email = req.body.email
+        const password = req.body.password
+    
+        if(!email || !password){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "credentials not provided"
+            }) 
+        }
+        
+    
+        if (typeof password !== 'string') {
+            return res.status(400).json({
+                status: 400,
+                successful: false,
+                message: "Password must be a string value"
+            });
+        }
+        
+        const user = await Users.findOne({email})
+        if(user){
+          if(await bcrypt.compare(password,user.password)){
+            const paylod = {
+                id : user._id,
+                username : user.username,
+                email : user.email,
+                create_at : new Date().getTime()
+            }
+            
+            const token = jwt.sign(paylod,process.env.ACCESS_TOKEN_SECERET,{expiresIn:"7d"})
+            res.cookie("JWT",token,{httpOnly:true,secure:false,SameSite:"strict",maxAge: 7 * 24 * 60 * 60 * 1000,})//secure:true in production
+            return res.redirect("/")
+          }
+        }
+        console.log(user,"is it getting tttttt",res)
+
+        return res.status(401).json({
+            status : 401,
+            successful : false,
+            message : "invalid credentials"
+        }) 
+  
+    } catch (error) {
+        const ErrorObject = {
+            status : 400,
+            successful : false,
+            error : error.name,
+            message : error.message,
+        }
+
+        if(error.name === "CastError"){
+            return res.status(400).json(ErrorObject)
+        }
+        console.log(error);
+        res.status(500).json(error)
+    }
+}
+//login
+
+
+
+
+
+module.exports = {
+    Register,
+    Login,
+}
