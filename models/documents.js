@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 
 
-const DocumentScama = mongoose.Schema({
+const DocumentSchema = mongoose.Schema({
     document_id : {
         type : String,
         required : true,
@@ -40,6 +40,6 @@ const DocumentScama = mongoose.Schema({
 
 
 
-const Documents = mongoose.model("Documents",DocumentScama,"documents")
+const Documents = mongoose.model("Documents",DocumentSchema,"documents")
 
 module.exports = Documents

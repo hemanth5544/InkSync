@@ -42,3 +42,73 @@ const AuthMiddleware = async (req,res,next) => {
 
 
 
+
+const IsContributor = async (req,res,next) => {
+    try {
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const user = await Users.findOne({_id:req.user.id})
+        const iscontributor = user.shared_documents.some((document) => document.document_id === document_id)
+        if(!iscontributor){
+            return res.status(403).json({
+                status : 403,
+                successful : false,
+                message : "you are not document contributor"
+            })  
+        }
+        next()
+        
+    } catch (error) {
+        console.log(error);
+        res.json(error)    
+    }
+}
+
+
+
+const IsAuthorized = function (roles) {
+    return async (req,res,next) => {
+
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+
+
+        const user = await Users.findOne({_id:req.user.id})
+        const shared_document = user.shared_documents.find((shared_document) => shared_document.document_id === document_id)
+        const isauthorized = roles.includes(shared_document.role)
+
+
+        if(!isauthorized){
+            return res.status(403).json({
+                status : 403,
+                successful : false,
+                message : "you are not authorized to do this action"
+            })  
+        }
+        next()
+        
+    }
+}
+
+
+
+
+module.exports = {
+    AuthMiddleware,
+    IsContributor,
+    IsAuthorized
+}
