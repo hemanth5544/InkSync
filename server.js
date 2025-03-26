@@ -9,13 +9,12 @@ const documents = require("./routes/documents")
 const {AuthMiddleware} = require("./middlewares")
 const { log } = require("console")
 require("dotenv").config()
-//packages
 
 
 
-//settings
 const app = express()
-const server = http.createServer(app)//create http server and pass express to handle route
+const server = http.createServer(app)
+
 mongoose.connect(process.env.MONGO_URI).then(() => console.log('mongodb connected!'));
 const io = new Server(server, {
     cors: {
@@ -24,11 +23,9 @@ const io = new Server(server, {
         allowedHeaders: ['Content-Type'],
     }
 });
-//settings
 
 
 
-//socket.io
 io.on("connection", async (socket) =>{
     socket.on("join_document",document_id => {
         socket.join(document_id)
@@ -39,17 +36,13 @@ io.on("connection", async (socket) =>{
         socket.to(document_id).emit("brodcast_delta", delta);
     })
 })
-//socket.io
 
 
-//middlewares
 app.use(express.json())
 app.use(cookieparser())
 app.use(express.static(path.join(__dirname, 'public')));
-//middlewares
 
 
-//templates endpoints
 app.use(users)
 app.get('/register',(req,res) => {
     return res.sendFile(path.join(__dirname, 'public', 'users', 'register.html'))
@@ -70,7 +63,6 @@ app.get('/documents',AuthMiddleware,async (req,res) => {
     return res.sendFile(path.join(__dirname, 'public', 'quill.html'))
 })
 
-//templates endpoints
 
 
 

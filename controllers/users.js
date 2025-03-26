@@ -5,10 +5,9 @@ const {GetUserAvatar} = require("../utilities")
 require("dotenv").config()
 
 
-//register
-//Regex
+
 const passwordValidationRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-//Regex
+
 const Register = async (req,res) => {
     try {
 
@@ -56,10 +55,7 @@ const Register = async (req,res) => {
         res.status(500).json(error)
     }
 }
-//register
 
-
-//login
 const Login = async (req,res) => {
     try {
         const email = req.body.email
@@ -120,7 +116,6 @@ const Login = async (req,res) => {
         res.status(500).json(error)
     }
 }
-//login
 
 
 
