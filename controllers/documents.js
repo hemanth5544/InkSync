@@ -153,3 +153,46 @@ const UpdateDocumentContent = async (req,res) => {
     }
 }
 
+
+
+const SaveAsDocument = async (req,res) => {
+    try {
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const name = req.body.name
+        const document = await Documents.findOneAndUpdate(
+            { document_id : document_id}, 
+            { $set: { document_name: name } },
+            { runValidators: true } 
+        );
+
+        if(!document){
+            return res.status(404).json({
+                status : 404,
+                successful : false,
+                message : "document not found!"
+            })   
+        }
+
+        return res.status(200).json({
+            status : 200,
+            successful : true,
+            message : "document has been saved"
+        })
+
+
+
+    } catch (error) {
+        console.log(error);
+        return res.json(error)
+    }
+}
+
+
