@@ -59,3 +59,31 @@ const CreateDocument = async (req,res) => {
     }
 }
 
+
+const FindDocument = async (req,res) => {
+    try {
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const document = await Documents.findOne({document_id})
+            .populate("document_contributors.contributor_id" , "username email")
+            .populate("document_creator" , "username email")
+
+    
+        return res.status(200).json({
+            status : 200,
+            successful : true,
+            document
+        }) 
+
+    } catch (error) {
+        console.log(error);
+        return res.json(error)
+    }
+}
