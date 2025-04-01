@@ -196,3 +196,89 @@ const SaveAsDocument = async (req,res) => {
 }
 
 
+
+const SendInvitation = async (req,res) => {
+    try {
+        const email = req.body.email
+        const user = await Users.findOne({email})
+
+        const role = req.body.role
+        const token = crypto.randomUUID()
+
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const document = await Documents.findOne({document_id})
+        .populate("document_creator","email")
+
+        if(!document){
+            return res.status(404).json({
+                status : 404,
+                successful : false,
+                message : "document not found!"
+            })    
+        }
+
+
+        const invitation = await Invitations.findOne({ 
+            email : email,
+            document_id : document_id,
+            used : true 
+        })
+       
+        if(invitation || document.document_creator.email === email){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "user is already document contributor"
+            })  
+        }
+
+        await new Invitations({
+            document_id,
+            email,
+            role,
+            token
+        }).save()
+
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'rachapalli.hemanth5544@gmail.com', 
+                pass: process.env.EMAIL_APP_PASSWORD, 
+            },
+        });
+
+
+        const InvitationLink = `http://localhost:2000/api/documents/join/${document_id}/?token=${token}`
+        const mailOptions = {
+            from: 'rachapalli.hemanth5544@gmail.com',
+            to: req.body.email,
+            subject: 'document invitation', 
+            text: `Hello  ${email},  ${req.user.email} invited you to contribute on his documents | click the link ${InvitationLink}`, 
+        };
+        
+        
+        await transporter.sendMail(mailOptions)
+        return res.status(200).json({
+            status: 200,
+            successful: true,
+            message: "invitation has been sent successfully",
+        })
+
+
+    } catch (error) {
+        console.log(error);
+        return res.json(error)   
+    }
+}
+
+
+
