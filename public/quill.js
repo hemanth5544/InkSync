@@ -23,3 +23,28 @@ const FindDocument = async () => {
     }
 }
 
+
+const UpdateDocumentContent = async (content) => {
+    await fetch(`/api/documents/${documentId}`,{
+        method : "PUT",
+        headers : {"Content-Type" : "application/json"},
+        body : JSON.stringify({content})
+    })
+}
+
+
+const saveDocumentBtn = document.getElementById("saveDocumentBtn")
+saveDocumentBtn.addEventListener("click",(e) => {
+    documentName = document.getElementById("documentName").value
+    SaveAsDocument(documentName)
+})
+
+
+const SaveAsDocument = async (name) => {
+    await fetch(`/api/documents/saveAs/${documentId}`,{
+        method : "PUT",
+        headers : {"Content-Type" : "application/json"},
+        body : JSON.stringify({name})
+    })
+}
+
