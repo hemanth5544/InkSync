@@ -282,3 +282,81 @@ const SendInvitation = async (req,res) => {
 
 
 
+
+const JoinDocument = async (req,res) => {
+    try {
+    const token = req.query.token
+    const document_id = req.params.document_id
+
+    if(!document_id){
+        return res.status(400).json({
+            status : 400,
+            successful : false,
+            message : "document_id parameter is not provided"
+        }) 
+    }
+
+    const document = await Documents.findOne({document_id})
+    if(!document){
+        return res.status(404).json({
+            status : 404,
+            successful : false,
+            message : "document not found!"
+        })    
+    }
+
+    const invitation = await Invitations.findOne({
+        document_id:document_id, //no idor
+        token : token, //no frud
+        used : false //no reuseing 
+    })
+            
+
+    if(!invitation){
+        return res.status(403).json({
+            status: 403,
+            successful: false,
+            message: "invitation invalid or expired",
+        })
+    }
+
+    const email = invitation.email
+    const role = invitation.role
+    
+    const user = await Users.findOne({email:email})
+
+    const InvitationLink = `/api/documents/join/${document_id}/?token=${token}`
+    if(!user){
+        return res.redirect(`/register?redirect=${InvitationLink}`)
+    }
+
+    document.document_contributors.push({
+        contributor_id : user._id,
+        role
+    })
+    await document.save()
+
+    user.shared_documents.push({
+        document_id,
+        role
+    })
+    await user.save()
+
+    invitation.used = true
+    await invitation.save()
+
+    await Invitations.deleteMany({
+        document_id, 
+        email : email,
+        used : false
+    })
+
+    return res.redirect(`/documents/?document_id=${document_id}`)
+           
+    } catch (error) {
+        console.log(error);
+        res.json(error)  
+
+    }
+}
+
