@@ -360,3 +360,40 @@ const JoinDocument = async (req,res) => {
     }
 }
 
+
+
+const GetDocumentContributors = async (req,res) => {
+    try {
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const document = await Documents.findOne({document_id})
+        .select("document_contributors")
+        .populate("document_contributors.contributor_id" , "email user_avatar role")
+
+        if(!document){
+            return res.status(404).json({
+                status : 404,
+                successful : false,
+                message : "document is not found"
+            }) 
+        }
+        
+        return res.status(200).json({
+            status: 200,
+            successful: true,
+            document_contributors: document.document_contributors,
+        }) 
+
+    } catch (error) {
+        console.log(error);
+        res.json(error)  
+    }
+}
+
