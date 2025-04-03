@@ -397,3 +397,106 @@ const GetDocumentContributors = async (req,res) => {
     }
 }
 
+
+const GetUserRole = async (req,res) => {
+    try {
+        const document_id = req.params.document_id
+        if(!document_id){
+            return res.status(400).json({
+                status : 400,
+                successful : false,
+                message : "document_id parameter is not provided"
+            }) 
+        }
+
+        const user = await Users.findOne({_id:req.user.id})
+        const shared_document = user.shared_documents.find((shared_document) => shared_document.document_id === document_id)
+        
+        return res.status(200).json({
+            status: 200,
+            successful: true,
+            role: shared_document.role,
+        }) 
+
+    } catch (error) {
+        console.log(error);
+        res.json(error)   
+    }
+}
+
+const DeleteDocument = async (req, res) => {
+    try {
+        const document_id = req.params.document_id;
+
+        if (!document_id) {
+            return res.status(400).json({
+                status: 400,
+                successful: false,
+                message: "document_id parameter is not provided",
+            });
+        }
+
+        const document = await Documents.findOne({ document_id });
+
+        if (!document) {
+            return res.status(404).json({
+                status: 404,
+                successful: false,
+                message: "Document not found!",
+            });
+        }
+
+        if (document.document_creator.toString() !== req.user.id) {
+            return res.status(403).json({
+                status: 403,
+                successful: false,
+                message: "You are not authorized to delete this document.",
+            });
+        }
+
+        await Documents.findOneAndDelete({ document_id });
+
+        const user = await Users.findOne({ _id: req.user.id });
+        user.shared_documents = user.shared_documents.filter(
+            (shared_document) => shared_document.document_id !== document_id
+        );
+        await user.save();
+
+        const contributors = document.document_contributors;
+        for (const contributor of contributors) {
+            const contributorUser = await Users.findOne({ _id: contributor.contributor_id });
+            if (contributorUser) {
+                contributorUser.shared_documents = contributorUser.shared_documents.filter(
+                    (shared_document) => shared_document.document_id !== document_id
+                );
+                await contributorUser.save();
+            }
+        }
+
+        return res.status(200).json({
+            status: 200,
+            successful: true,
+            message: "Document has been deleted successfully.",
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: 500,
+            successful: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+module.exports = {
+    CreateDocument,
+    FindDocument,
+    FindDocuments,
+    UpdateDocumentContent,
+    SaveAsDocument,
+    SendInvitation,
+    JoinDocument,
+    GetDocumentContributors,
+    GetUserRole,
+    DeleteDocument
+}
