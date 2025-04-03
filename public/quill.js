@@ -48,3 +48,25 @@ const SaveAsDocument = async (name) => {
     })
 }
 
+
+
+const inviteBtn = document.getElementById("inviteBtn")
+inviteBtn.addEventListener("click",async (e) => {
+    email = document.getElementById("email").value
+    role = document.getElementById("role").value
+
+    await fetch(`/api/documents/SendInvitation/${documentId}`,{
+        method : "POST",
+        headers : {"Content-Type" : "application/json"},
+        body : JSON.stringify({email,role})
+    })
+})
+
+
+
+const GetUserRole = async () => {
+    const response = await fetch(`/api/documents/GetUserRole/${documentId}`)
+    const data = await response.json()
+    return data.role
+}
+
