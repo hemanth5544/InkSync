@@ -8,8 +8,23 @@ if (!documentId) {
 }
 
 
-
-
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer);
+        toast.addEventListener('mouseleave', Swal.resumeTimer);
+        // Match theme
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            toast.style.background = '#343a40';
+            toast.style.color = '#f8f9fa';
+        }
+    }
+});
 const CreateDocument = async () => {
     await fetch(`/api/documents/create/${documentId}`)
 }
@@ -41,26 +56,67 @@ saveDocumentBtn.addEventListener("click",(e) => {
 
 
 const SaveAsDocument = async (name) => {
-    await fetch(`/api/documents/saveAs/${documentId}`,{
-        method : "PUT",
-        headers : {"Content-Type" : "application/json"},
-        body : JSON.stringify({name})
-    })
-}
+    try {
+        const response = await fetch(`/api/documents/saveAs/${documentId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name })
+        });
+        if (response.ok) {
+            Toast.fire({
+                icon: 'success',
+                title: 'Document saved successfully!'
+            });
+            const saveAsModal = bootstrap.Modal.getInstance(document.getElementById('saveAsModal'));
+            saveAsModal.hide();
+        } else {
+            Toast.fire({
+                icon: 'error',
+                title: 'Failed to save document'
+            });
+        }
+    } catch (error) {
+        Toast.fire({
+            icon: 'error',
+            title: 'An error occurred'
+        });
+    }
+};
 
 
 
-const inviteBtn = document.getElementById("inviteBtn")
-inviteBtn.addEventListener("click",async (e) => {
-    email = document.getElementById("email").value
-    role = document.getElementById("role").value
+const inviteBtn = document.getElementById("inviteBtn");
+inviteBtn.addEventListener("click", async (e) => {
+    const email = document.getElementById("email").value;
+    const role = document.getElementById("role").value;
 
-    await fetch(`/api/documents/SendInvitation/${documentId}`,{
-        method : "POST",
-        headers : {"Content-Type" : "application/json"},
-        body : JSON.stringify({email,role})
-    })
-})
+    try {
+        const response = await fetch(`/api/documents/SendInvitation/${documentId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, role })
+        });
+        if (response.ok) {
+            Toast.fire({
+                icon: 'success',
+                title: 'Invitation sent successfully!'
+            });
+            const inviteModal = bootstrap.Modal.getInstance(document.getElementById('inviteModal'));
+            inviteModal.hide();
+            GetDocumentContributors();
+        } else {
+            Toast.fire({
+                icon: 'error',
+                title: 'Failed to send invitation'
+            });
+        }
+    } catch (error) {
+        Toast.fire({
+            icon: 'error',
+            title: 'An error occurred'
+        });
+    }
+});
 
 
 
