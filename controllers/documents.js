@@ -257,7 +257,7 @@ const SendInvitation = async (req,res) => {
         });
 
 
-        const InvitationLink = `http://localhost:2000/api/documents/join/${document_id}/?token=${token}`
+        const InvitationLink = `https://inksync-gjzj.onrender.com/api/documents/join/${document_id}/?token=${token}`
         const mailOptions = {
             from: 'rachapalli.hemanth5544@gmail.com',
             to: req.body.email,

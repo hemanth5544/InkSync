@@ -18,7 +18,7 @@ const server = http.createServer(app)
 mongoose.connect(process.env.MONGO_URI).then(() => console.log('mongodb connected!'));
 const io = new Server(server, {
     cors: {
-        origin: "http://127.0.0.1:2000",  
+        origin: "*",  
         methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
         allowedHeaders: ['Content-Type'],
     }
