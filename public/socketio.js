@@ -1,4 +1,4 @@
-const socket = io("http://127.0.0.1:2000")
+const socket = io("https://inksync-gjzj.onrender.com")
 
 
 socket.emit("join_document",documentId)
