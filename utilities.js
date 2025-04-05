@@ -1,7 +1,6 @@
 const GetUserAvatar = function (seed) {
-    return `https://robohash.org/${encodeURIComponent(seed)}?set=set1&size=80x80`;
-}
-
+    return `https://api.dicebear.com/8.x/pixel-art/svg?seed=${encodeURIComponent(seed)}`;
+};
 
 module.exports = {
     GetUserAvatar
